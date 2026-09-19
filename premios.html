@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>The Mansion - Salón de Premios</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        * { image-rendering: pixelated; box-sizing: border-box; }
+
+        body {
+            margin: 0; padding: 0; background: #000;
+            height: 100vh; width: 100vw; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'VT323', monospace;
+        }
+
+        #prizes-wrapper {
+            position: relative; width: 1920px; height: 1080px;
+            background-image: url('fondo_premios.png');
+            background-size: cover;
+        }
+
+        .shelf-board {
+            position: absolute;
+            bottom: 0; /* Se apoya en la base del contenedor shelf */
+            left: 0;
+            width: 100%;
+            height: auto;
+            z-index: -1; /* Para que los trofeos queden por encima de la madera */
+        }
+
+        .shelf {
+            /* Ajustamos un poco el padding para que los trofeos no "vuelen" */
+            padding-bottom: 20px; 
+        }
+
+        /* --- CONTENEDOR DE INSIGNIAS --- */
+        .insignias-container {
+            position: absolute; top: 80px; left: 240px;
+            display: flex; gap: 45px;
+        }
+        .slot-insignia {
+            width: 120px; height: 140px;
+            background-size: contain; background-repeat: no-repeat;
+        }
+        /* Clase para las siluetas (por defecto) */
+        .insignia-locked { background-image: url('silueta_insignia.png'); opacity: 0.6; }
+
+        /* --- ESTANTERÍAS Y TROFEOS --- */
+        .shelf {
+            position: absolute; left: 300px;
+            width: 1320px; height: 280px;
+            display: flex; align-items: flex-end; padding-left: 50px; gap: 80px;
+        }
+        #shelf-top { top: 380px; }
+        #shelf-bottom { top: 680px; }
+
+        .trophy-slot {
+            width: 220px;
+            height: 250px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom center; /* Importante para que se apoyen */
+            z-index: 2;
+        }
+
+        /* --- CUADRO EXTRAS --- */
+        #extras-frame {
+            position: absolute; top: 60px; right: 280px;
+            width: 250px; height: 200px;
+            cursor: pointer;
+            background-image: url('cuadro_extras_OFF.png'); /* Imagen oscurecida */
+            background-size: contain; background-repeat: no-repeat;
+        }
+        #extras-frame.unlocked { background-image: url('cuadro_extras_ON.png'); }
+
+        /* --- NAVEGACIÓN --- */
+        #btn-back {
+            position: absolute; top: 48%; left: 80px;
+            width: 100px; cursor: pointer;
+            transition: transform 0.2s;
+        }
+        #btn-back:hover { transform: scale(1.1); }
+    </style>
+</head>
+<body>
+
+    <div id="prizes-wrapper">
+        <img src="flecha_amarilla.png" id="btn-back" onclick="irAlLobby()" style="transform: rotate(180deg);">
+
+        <div class="insignias-container">
+            <div id="slot-ins-1" class="slot-insignia insignia-locked"></div>
+            <div id="slot-ins-2" class="slot-insignia insignia-locked"></div>
+            <div id="slot-ins-3" class="slot-insignia insignia-locked"></div>
+            <div id="slot-ins-4" class="slot-insignia insignia-locked"></div>
+            <div id="slot-ins-5" class="slot-insignia insignia-locked"></div>
+        </div>
+
+        <div id="extras-frame" onclick="abrirExtras()"></div>
+
+        <div class="shelf" id="shelf-top">
+            <img src="estanteria_madera.png" class="shelf-board"> <div id="trophy-1" class="trophy-slot"></div>
+            <div id="trophy-2" class="trophy-slot"></div>
+            <div id="trophy-3" class="trophy-slot"></div>
+            <div id="trophy-4" class="trophy-slot"></div>
+        </div>
+
+        <div class="shelf" id="shelf-bottom">
+            <img src="estanteria_madera.png" class="shelf-board"> <div id="trophy-5" class="trophy-slot"></div>
+            <div id="trophy-6" class="trophy-slot"></div>
+            <div id="trophy-7" class="trophy-slot"></div>
+            <div id="trophy-8" class="trophy-slot"></div>
+        </div>
+    </div>
+
+    <script>
+        function actualizarPabellon() {
+            // 1. Comprobar Nivel 1
+            if(localStorage.getItem('nivel1_ganado') === 'true') {
+                // Aparece la insignia
+                document.getElementById('slot-ins-1').style.backgroundImage = "url('insignia_1.png')";
+                document.getElementById('slot-ins-1').classList.remove('insignia-locked');
+                // Aparece el trofeo
+                document.getElementById('trophy-1').style.backgroundImage = "url('trofeo_caja_fuerte.png')";
+            }
+
+            // 2. Comprobar desbloqueo de Extras (requiere 5 insignias)
+            // (Aquí iremos sumando los niveles que ganes)
+            let totalInsignias = 0;
+            if(localStorage.getItem('nivel1_ganado') === 'true') totalInsignias++;
+            // ... añadir más aquí en el futuro
+
+            if(totalInsignias >= 5) {
+                document.getElementById('extras-frame').classList.add('unlocked');
+            }
+        }
+
+        function irAlLobby() {
+            window.location.href = 'index.html';
+        }
+
+        function abrirExtras() {
+            const frame = document.getElementById('extras-frame');
+            if(frame.classList.contains('unlocked')) {
+                alert("Entrando al menú de extras...");
+                // window.location.href = 'extras.html';
+            } else {
+                alert("El cuadro está muy oscuro para ver nada. Necesitas más insignias.");
+            }
+        }
+
+        // Re-escalado automático
+        function resize() {
+            const wrapper = document.getElementById('prizes-wrapper');
+            const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+            wrapper.style.transform = `scale(${scale})`;
+        }
+
+        window.onload = () => {
+            resize();
+            actualizarPabellon();
+        };
+        window.onresize = resize;
+    </script>
+</body>
+</html>
